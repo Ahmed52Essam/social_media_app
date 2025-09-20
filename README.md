@@ -63,6 +63,22 @@ uvicorn social_media_app.main:app --reload
 - The API will be running at **http://127.0.0.1:8000**.
 - You can access the interactive API documentation (Swagger UI) at **http://127.0.0.1:8000/docs**.
 
+## Running Tests
+
+To run the automated tests for this project, you'll first need to install the development dependencies.
+
+1.  **Install Development Dependencies**
+    With your virtual environment active, install the required packages from `requirments-dev.txt`.
+    ```bash
+    pip install -r requirments-dev.txt
+    ```
+
+2.  **Run Tests**
+    Execute the following command to run the test suite with pytest:
+    ```bash
+    pytest
+    ```
+
 ## API Endpoints
 
 Here is a summary of the available endpoints:
