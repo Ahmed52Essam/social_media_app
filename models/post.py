@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class UserPostIn(BaseModel):
@@ -6,6 +6,9 @@ class UserPostIn(BaseModel):
 
 
 class UserPost(UserPostIn):
+    model_config = ConfigDict(
+        from_attributes=True
+    )  # ORM mode "pydantic to be able to handle sql objects"
     id: int
 
 
@@ -18,10 +21,13 @@ class CommentIn(BaseModel):
 
 
 class Comment(CommentIn):
-    comment_id: int
+    model_config = ConfigDict(
+        from_attributes=True
+    )  # ORM mode "pydantic to be able to handle sql objects"
+    id: int
 
 
-{"comment_id": 0, "body": "This is my comment", "post_id": 0}
+{"id": 0, "body": "This is my comment", "post_id": 0}
 
 
 class UserPostWithComments(BaseModel):
@@ -31,5 +37,5 @@ class UserPostWithComments(BaseModel):
 
 {
     "post": {id: 0, "body": "This is my post"},
-    "comments": {"post_id": 0, "body": "This is my comment", "comment_id": 0},
+    "comments": {"post_id": 0, "body": "This is my comment", "id": 0},
 }

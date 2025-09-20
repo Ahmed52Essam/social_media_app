@@ -1,6 +1,6 @@
 # Social Media API
 
-A simple REST API for a social media application built with Python and FastAPI. This project provides basic functionalities for creating posts and commenting on them, with data stored in-memory.
+A simple REST API for a social media application built with Python and FastAPI. This project provides basic functionalities for creating posts and commenting on them, with data stored in a SQLite database.
 
 ## Features
 - Create posts.
@@ -8,6 +8,14 @@ A simple REST API for a social media application built with Python and FastAPI. 
 - Create comments on a specific post.
 - Retrieve a list of all comments for a specific post.
 - Retrieve a single post along with all of its comments.
+
+## Database
+
+This project uses **SQLAlchemy** to interact with a **SQLite** database.
+
+- **Database Schema:** The schema is defined in `social_media_app/database.py` and includes tables for `post` and `comments`.
+- **Configuration:** The database connection is managed in `social_media_app/config.py` and can be configured for different environments (development, testing, production).
+- **Development:** In the development environment, the application uses a `data.db` file in the project root.
 
 ## Getting Started
 

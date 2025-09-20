@@ -5,11 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from social_media_app.routers.post import comments_table, post_table
-
 os.environ["ENV_STATE"] = "test"
-
-from social_media_app.main import app  # noqa: E402
 
 
 @pytest.fixture(scope="session")
@@ -19,17 +15,23 @@ def anyio_backend():
 
 @pytest.fixture()
 def client() -> Generator:
+    from social_media_app.main import app
+
     yield TestClient(app)
 
 
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
-    comments_table.clear()
-    post_table.clear()
+    from social_media_app.database import database
+
+    await database.connect()
     yield
+    await database.disconnect()
 
 
 @pytest.fixture()
 async def async_client(client) -> AsyncGenerator:
+    from social_media_app.main import app
+
     async with AsyncClient(app=app, base_url=client.base_url) as ac:
         yield ac
