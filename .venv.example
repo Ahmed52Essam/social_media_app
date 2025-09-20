@@ -1,1 +1,5 @@
-DATABASE_URL
+# The environment state. Use "dev" for development.
+ENV_STATE=dev
+
+# The database connection string for the development environment.
+DEV_DATABASE_URL=sqlite:///data.db
