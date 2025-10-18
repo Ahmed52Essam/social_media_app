@@ -71,3 +71,11 @@ async def create_comment(comment: CommentIn):
     last_record_id = await database.execute(query)
     logger.debug(query)
     return {**data, "id": last_record_id}
+
+
+@router.get("/test-log")
+async def test_log():
+    logger.info(
+        "🧠 Logtail test message from FastAPI", extra={"email": "user@example.com"}
+    )
+    return {"status": "sent"}
