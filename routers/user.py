@@ -1,3 +1,5 @@
+# 2- Create user Endpoint (save users info into database)
+
 import logging
 
 from fastapi import APIRouter, HTTPException, status

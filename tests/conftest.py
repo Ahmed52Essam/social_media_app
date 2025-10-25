@@ -36,6 +36,7 @@ async def async_client(client) -> AsyncGenerator:
         yield ac
 
 
+# 3- Create pytest fixture that registers the users
 @pytest.fixture()
 async def registered_user(async_client: AsyncClient) -> dict:
     user_details = {"email": "test@example.net", "password": "1234"}

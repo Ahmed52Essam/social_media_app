@@ -2,6 +2,8 @@ import pytest
 
 from social_media_app import security
 
+# 4- Create test for get user function
+
 
 @pytest.mark.anyio
 async def test_get_user(registered_user: dict):
