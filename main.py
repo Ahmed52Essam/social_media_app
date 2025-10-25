@@ -8,6 +8,7 @@ from fastapi.exception_handlers import http_exception_handler
 from social_media_app.database import database
 from social_media_app.logging_config import configure_logging
 from social_media_app.routers.post import router as post_router
+from social_media_app.routers.user import router as user_router
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CorrelationIdMiddleware)
 app.include_router(post_router)
+app.include_router(user_router)
 
 
 @app.exception_handler(HTTPException)
