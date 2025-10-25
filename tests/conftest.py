@@ -7,6 +7,9 @@ from httpx import AsyncClient
 
 os.environ["ENV_STATE"] = "test"
 
+from social_media_app.database import database, user_table
+from social_media_app.main import app  # noqa: E402
+
 
 @pytest.fixture(scope="session")
 def anyio_backend():
@@ -15,8 +18,6 @@ def anyio_backend():
 
 @pytest.fixture()
 def client() -> Generator:
-    from social_media_app.main import app
-
     yield TestClient(app)
 
 
@@ -31,7 +32,15 @@ async def db() -> AsyncGenerator:
 
 @pytest.fixture()
 async def async_client(client) -> AsyncGenerator:
-    from social_media_app.main import app
-
     async with AsyncClient(app=app, base_url=client.base_url) as ac:
         yield ac
+
+
+@pytest.fixture()
+async def registered_user(async_client: AsyncClient) -> dict:
+    user_details = {"email": "test@example.net", "password": "1234"}
+    await async_client.post("/register", json=user_details)
+    query = user_table.select().where(user_table.c.email == user_details["email"])
+    user = await database.fetch_one(query)
+    user_details["id"] = user.id
+    return user_details
