@@ -2,6 +2,13 @@ import pytest
 
 from social_media_app import security
 
+
+@pytest.mark.anyio
+async def test_password_hashes():
+    password = "password"
+    assert security.verify_password(password, security.get_password_hashed(password))
+
+
 # 4- Create test for get user function
 
 
@@ -12,6 +19,6 @@ async def test_get_user(registered_user: dict):
 
 
 @pytest.mark.anyio
-async def test_get_user_not_found(registered_user: dict):
+async def test_get_user_not_found():
     user = await security.get_user("test@example.com")
     assert user is None
