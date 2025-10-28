@@ -6,7 +6,12 @@ from fastapi import APIRouter, HTTPException, status
 
 from social_media_app.database import database, user_table
 from social_media_app.models.user import UserIn
-from social_media_app.security import get_password_hashed, get_user
+from social_media_app.security import (
+    authenticate_user,
+    create_access_token,
+    get_password_hashed,
+    get_user,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -26,3 +31,10 @@ async def register(user: UserIn):
     logger.debug(query)
     await database.execute(query)
     return {"detail": "User created"}
+
+
+@router.post("/token")
+async def login(user: UserIn):
+    user = await authenticate_user(user.email, user.password)
+    access_token = create_access_token(user.email)
+    return {"access_token": access_token, "token_type": "bearer"}

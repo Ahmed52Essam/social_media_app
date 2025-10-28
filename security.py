@@ -1,12 +1,34 @@
+import datetime
 import logging
 
+from fastapi import HTTPException, status
+from jose import jwt
 from passlib.context import CryptContext
 
 from social_media_app.database import database, user_table
 
 logger = logging.getLogger(__name__)
 
+SECRET_KEY = "sdfkkajfklj8983huih2389fh2ih89f2389hf392h89fh23348h78f3"
+ALGORITHM = "HS256"
+credintials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user"
+)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def access_token_expire_minutes() -> int:
+    return 30
+
+
+def create_access_token(email: str):
+    logger.debug("Creating access token", extra={"email": email})
+    expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+        minutes=access_token_expire_minutes()
+    )
+    jwt_data = {"sub": email, "exp": expire}
+    encoded_jwt = jwt.encode(jwt_data, key=SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 
 def get_password_hashed(password: str) -> str:
@@ -23,3 +45,13 @@ async def get_user(email: str):
     result = await database.fetch_one(query)
     if result:
         return result
+
+
+async def authenticate_user(email: str, password: str):
+    logger.debug("Authenticating user", extra={"email": email})
+    user = await get_user(email)
+    if not user:
+        raise credintials_exception
+    if not verify_password(password, user.password):
+        raise credintials_exception
+    return user

@@ -1,6 +1,21 @@
 import pytest
+from jose import jwt
 
 from social_media_app import security
+
+
+@pytest.mark.anyio
+async def test_access_token_expire_minutes():
+    assert security.access_token_expire_minutes() == 30
+
+
+@pytest.mark.anyio
+async def test_create_access_token():
+    token = "email@test.net"
+    token = security.create_access_token(token)
+    assert {"sub": "email@test.net"}.items() <= jwt.decode(
+        token, key=security.SECRET_KEY, algorithms=[security.ALGORITHM]
+    ).items()
 
 
 @pytest.mark.anyio
@@ -22,3 +37,23 @@ async def test_get_user(registered_user: dict):
 async def test_get_user_not_found():
     user = await security.get_user("test@example.com")
     assert user is None
+
+
+@pytest.mark.anyio
+async def test_authenticate_user_exist(registered_user: dict):
+    user = await security.authenticate_user(
+        registered_user["email"], registered_user["password"]
+    )
+    assert user.email == registered_user["email"]
+
+
+@pytest.mark.anyio
+async def test_authenticate_user_not_exist():
+    with pytest.raises(security.HTTPException):
+        await security.authenticate_user("anyemail", "1234")
+
+
+@pytest.mark.anyio
+async def test_authenticate_user_exist_wrong_password(registered_user: dict):
+    with pytest.raises(security.HTTPException):
+        await security.authenticate_user(registered_user["email"], "wrong password")
