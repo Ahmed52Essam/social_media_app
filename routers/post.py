@@ -1,6 +1,7 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 
 from social_media_app.database import comment_table, database, post_table
 from social_media_app.models.post import (
@@ -10,8 +11,7 @@ from social_media_app.models.post import (
     UserPostIn,
     UserPostWithComments,
 )
-from social_media_app.models.user import User
-from social_media_app.security import get_current_user, oauth2scheme
+from social_media_app.security import get_current_user
 
 router = APIRouter()
 
@@ -26,9 +26,10 @@ async def find_post(post_id: int):
 
 
 @router.post("/post", response_model=UserPost, status_code=201)
-async def create_post(post: UserPostIn, request: Request):
+async def create_post(
+    post: UserPostIn, current_user: Annotated[str, Depends(get_current_user)]
+):
     logger.info(f"Creating post: {post}")
-    current_user: User = await get_current_user(await oauth2scheme(request=request))  # noqa
 
     data = post.model_dump()
     query = post_table.insert().values(data)
@@ -64,9 +65,10 @@ async def get_post_with_comments(post_id: int):
 
 
 @router.post("/comment", response_model=Comment, status_code=201)
-async def create_comment(comment: CommentIn, request: Request):
+async def create_comment(
+    comment: CommentIn, current_user: Annotated[str, Depends(get_current_user)]
+):
     logger.info(f"creating comment: {comment}")
-    current_user: User = await get_current_user(await oauth2scheme(request=request))  # noqa
 
     post = await find_post(comment.post_id)
     if not post:
