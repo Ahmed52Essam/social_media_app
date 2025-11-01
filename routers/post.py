@@ -1,4 +1,5 @@
 import logging
+from enum import Enum
 from typing import Annotated
 
 import sqlalchemy
@@ -62,10 +63,22 @@ async def like_post(
     return {**data, "id": last_record_id}
 
 
+class PostSorting(str, Enum):
+    new = "new"
+    old = "old"
+    most_likes = "most_likes"
+
+
 @router.get("/post", response_model=list[UserPost])
-async def get_all_posts():
+async def get_all_posts(sorting: PostSorting = PostSorting.new):
     logger.info("Featching all posts")
-    query = post_table.select()
+    if sorting == PostSorting.new:
+        query = select_post_and_likes.order_by(post_table.c.id.desc())
+    elif sorting == PostSorting.old:
+        query = select_post_and_likes.order_by(post_table.c.id.asc())
+    elif sorting == PostSorting.most_likes:
+        query = select_post_and_likes.order_by(sqlalchemy.desc("likes"))
+
     logger.debug(query)
     return await database.fetch_all(query)
 
