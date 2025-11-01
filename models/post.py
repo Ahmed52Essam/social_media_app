@@ -10,6 +10,7 @@ class UserPost(UserPostIn):
         from_attributes=True
     )  # ORM mode "pydantic to be able to handle sql objects"
     id: int
+    user_id: int
 
 
 {"id": 0, "body": "This is my post"}
@@ -25,6 +26,7 @@ class Comment(CommentIn):
         from_attributes=True
     )  # ORM mode "pydantic to be able to handle sql objects"
     id: int
+    user_id: int
 
 
 {"id": 0, "body": "This is my comment", "post_id": 0}
