@@ -41,3 +41,12 @@ class UserPostWithComments(BaseModel):
     "post": {id: 0, "body": "This is my post"},
     "comments": {"post_id": 0, "body": "This is my comment", "id": 0},
 }
+
+
+class PostLikeIn(BaseModel):
+    post_id: int
+
+
+class PostLike(PostLikeIn):
+    id: int
+    user_id: int
