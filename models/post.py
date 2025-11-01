@@ -16,6 +16,13 @@ class UserPost(UserPostIn):
 {"id": 0, "body": "This is my post"}
 
 
+class UserPostwithLikes(UserPost):
+    likes: int
+    model_config = ConfigDict(
+        from_attributes=True
+    )  # ORM mode "pydantic to be able to handle sql objects"
+
+
 class CommentIn(BaseModel):
     body: str
     post_id: int
@@ -33,7 +40,7 @@ class Comment(CommentIn):
 
 
 class UserPostWithComments(BaseModel):
-    post: UserPost
+    post: UserPostwithLikes
     comments: list[Comment]
 
 
