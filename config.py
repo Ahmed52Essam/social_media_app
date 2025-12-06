@@ -15,6 +15,8 @@ class GlobalConfig(BaseConfig):
     DB_FORCE_ROLL_BACK: bool = False
     LOGTAIL_API_KEY: Optional[str] = None
     LOGTAIL_SERVER_HOST: Optional[str] = None
+    MAILGUN_DOMAIN: Optional[str] = None
+    MAILGUN_API_KEY: Optional[str] = None
 
 
 class DevConfig(GlobalConfig):

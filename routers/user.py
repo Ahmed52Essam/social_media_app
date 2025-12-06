@@ -3,9 +3,10 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from social_media_app import tasks
 from social_media_app.database import database, user_table
 from social_media_app.models.user import UserIn
 from social_media_app.security import (
@@ -21,8 +22,23 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+async def send_registration_email(email: str, confirmation_url: str):
+    """
+    Wrapper function to safely send registration email in the background.
+    """
+    try:
+        await tasks.send_user_registeration_email(
+            email,
+            confirmation_url=confirmation_url,
+        )
+    except tasks.APIResponseError as e:
+        logger.error(
+            f"Error sending confirmation email to {email}: {e}", extra={"email": email}
+        )
+
+
 @router.post("/register", status_code=201)
-async def register(user: UserIn, request: Request):
+async def register(user: UserIn, request: Request, background_tasks: BackgroundTasks):
     if await get_user(user.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -34,12 +50,14 @@ async def register(user: UserIn, request: Request):
     query = user_table.insert().values(email=user.email, password=hashed_password)
     logger.debug(query)
     await database.execute(query)
-    return {
-        "detail": "User created. Please confirm your email.",
-        "confirmation_url": request.url_for(
-            "confirm_email", token=create_confirmation_token(user.email)
-        ),
-    }
+
+    background_tasks.add_task(
+        send_registration_email,
+        user.email,
+        request.url_for("confirm_email", token=create_confirmation_token(user.email)),
+    )
+
+    return {"detail": "User created. Please confirm your email."}
 
 
 @router.post("/token")
