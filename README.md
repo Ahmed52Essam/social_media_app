@@ -3,17 +3,20 @@
 A simple REST API for a social media application built with Python and FastAPI. This project provides basic functionalities for creating posts and commenting on them, with data stored in a SQLite database.
 
 ## Features
-- Create posts.
-- Retrieve a list of all posts.
-- Create comments on a specific post.
+- User registration and authentication (JWT-based).
+- Email confirmation for new users sent as a background task.
+- Authenticated users can create posts.
+- Authenticated users can like posts.
+- Retrieve a list of all posts with sorting options (new, old, most likes).
+- Authenticated users can create comments on a specific post.
 - Retrieve a list of all comments for a specific post.
-- Retrieve a single post along with all of its comments.
+- Retrieve a single post along with all of its comments and like count.
 
 ## Database
 
 This project uses **SQLAlchemy** to interact with a **SQLite** database.
 
-- **Database Schema:** The schema is defined in `social_media_app/database.py` and includes tables for `post` and `comments`.
+- **Database Schema:** The schema is defined in `social_media_app/database.py` and includes tables for `post`, `comments`, `users`, and `likes`.
 - **Configuration:** The database connection is managed in `social_media_app/config.py` and can be configured for different environments (development, testing, production).
 - **Development:** In the development environment, the application uses a `data.db` file in the project root.
 
@@ -82,6 +85,29 @@ The `tests/routers/test_post.py` file contains the tests for the post and commen
 *   **HTTPX for API Calls:** It uses `httpx.AsyncClient` to make asynchronous API calls to the application.
 *   **Fixtures for Test Data:** It uses `pytest` fixtures to create test data (`created_post`, `created_comment`). This makes the tests cleaner and more reusable.
 *   **Comprehensive Test Coverage:** It includes tests for creating posts and comments, getting all posts, getting comments on a post, and getting a post with its comments. It also includes tests for error conditions, such as creating a post without a body or getting a missing post.
+
+### User Management (`routers/user.py`)
+
+This module handles user registration and authentication.
+
+*   **User Registration:** The `/register` endpoint creates a new user, hashes their password, and stores them in the database. It then triggers a background task to send a confirmation email.
+*   **Authentication:** The `/token` endpoint implements the OAuth2 password flow. It authenticates a user and returns a JWT access token.
+*   **Email Confirmation:** The `/confirm/{token}` endpoint is used to verify a user's email address using a confirmation token sent to them upon registration.
+
+### Security (`security.py`)
+
+This module is central to the application's security.
+
+*   **Password Hashing:** It uses `passlib` to hash user passwords before storing them and to verify passwords during login.
+*   **JWT Management:** It handles the creation and verification of JSON Web Tokens (JWTs) for both access and email confirmation purposes. It includes functions to handle token expiration and invalid tokens.
+*   **Dependency Injection:** It provides a `get_current_user` dependency that can be injected into any endpoint to ensure that the request is coming from an authenticated and confirmed user.
+
+### Background Tasks (`tasks.py`)
+
+The `tasks.py` module offloads long-running operations to be executed in the background, ensuring the API remains responsive.
+
+*   **Email Sending:** It contains the logic for sending emails using the Mailgun API via `httpx`. This is used to send a confirmation email to new users without blocking the registration API response.
+*   **Error Handling:** It includes custom exception handling for API errors when communicating with the Mailgun service.
 
 ## Getting Started
 
@@ -155,15 +181,19 @@ To run the automated tests for this project, you'll first need to install the de
 
 ## API Endpoints
 
-Here is a summary of the available endpoints:
+Here is a summary of the available endpoints. Endpoints marked with `(auth)` require a valid JWT access token.
 
 | Method | Path                       | Description                                |
 |--------|----------------------------|--------------------------------------------|
-| `POST` | `/post`                    | Creates a new post.                        |
+| `POST` | `/register`                | Creates a new user.                        |
+| `POST` | `/token`                   | Authenticates a user and returns a token.  |
+| `GET`  | `/confirm/{token}`         | Confirms a user's email address.           |
+| `POST` | `/post` (auth)             | Creates a new post.                        |
 | `GET`  | `/post`                    | Retrieves all posts.                       |
 | `GET`  | `/post/{post_id}`          | Retrieves a post and all its comments.     |
-| `POST` | `/comment`                 | Creates a new comment on a post.           |
+| `POST` | `/comment` (auth)          | Creates a new comment on a post.           |
 | `GET`  | `/post/{post_id}/comments` | Retrieves all comments for a specific post.|
+| `POST` | `/like` (auth)             | Likes a specific post.                     |
 
 ### Deactivating the Environment
 When you are finished working, you can deactivate the virtual environment:
