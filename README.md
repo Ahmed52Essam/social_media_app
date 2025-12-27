@@ -7,6 +7,7 @@ A simple REST API for a social media application built with Python and FastAPI. 
 - Email confirmation for new users sent as a background task.
 - Authenticated users can create posts.
 - Authenticated users can like posts.
+- Authenticated users can upload files.
 - Retrieve a list of all posts with sorting options (new, old, most likes).
 - Authenticated users can create comments on a specific post.
 - Retrieve a list of all comments for a specific post.
@@ -109,6 +110,14 @@ The `tasks.py` module offloads long-running operations to be executed in the bac
 *   **Email Sending:** It contains the logic for sending emails using the Mailgun API via `httpx`. This is used to send a confirmation email to new users without blocking the registration API response.
 *   **Error Handling:** It includes custom exception handling for API errors when communicating with the Mailgun service.
 
+### File Upload (`routers/upload.py`)
+
+This module is responsible for handling file uploads.
+
+*   **Temporary Storage:** When a file is uploaded, it's first saved to a temporary location on the server.
+*   **Cloud Upload:** The file is then uploaded from the temporary location to a cloud storage provider (in this case, Backblaze B2).
+*   **Security:** The endpoint is protected and requires an authenticated user to be able to upload files.
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -194,6 +203,7 @@ Here is a summary of the available endpoints. Endpoints marked with `(auth)` req
 | `POST` | `/comment` (auth)          | Creates a new comment on a post.           |
 | `GET`  | `/post/{post_id}/comments` | Retrieves all comments for a specific post.|
 | `POST` | `/like` (auth)             | Likes a specific post.                     |
+| `POST` | `/upload` (auth)           | Uploads a file.                            |
 
 ### Deactivating the Environment
 When you are finished working, you can deactivate the virtual environment:
