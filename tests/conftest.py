@@ -10,7 +10,7 @@ os.environ["ENV_STATE"] = "test"
 
 from social_media_app.database import database, user_table
 from social_media_app.main import app  # noqa: E402
-
+from social_media_app.tests.helpers import create_post # noqa: E402
 
 @pytest.fixture(scope="session")
 def anyio_backend():
@@ -27,7 +27,7 @@ async def db() -> AsyncGenerator:
     from social_media_app.database import database
 
     await database.connect()
-    yield
+    yield database
     await database.disconnect()
 
 
@@ -83,3 +83,7 @@ def mock_httpx_client(mocker):
     mocked_async_client.post = AsyncMock(return_value=response)
     mocked_cleint.return_value.__aenter__.return_value = mocked_async_client
     return mocked_async_client
+
+@pytest.fixture()
+async def created_post(async_client: AsyncClient, logged_in_token: str):
+    return await create_post("Test post", async_client, logged_in_token)

@@ -12,6 +12,8 @@ A simple REST API for a social media application built with Python and FastAPI. 
 - Authenticated users can create comments on a specific post.
 - Retrieve a list of all comments for a specific post.
 - Retrieve a single post along with all of its comments and like count.
+- **AI Image Generation:** Automatically generate images for posts based on text prompts using the DeepAI API.
+
 
 ## Database
 
@@ -108,7 +110,9 @@ This module is central to the application's security.
 The `tasks.py` module offloads long-running operations to be executed in the background, ensuring the API remains responsive.
 
 *   **Email Sending:** It contains the logic for sending emails using the Mailgun API via `httpx`. This is used to send a confirmation email to new users without blocking the registration API response.
-*   **Error Handling:** It includes custom exception handling for API errors when communicating with the Mailgun service.
+*   **AI Image Generation:** The `generate_and_add_to_post` task uses the DeepAI API to generate an image based on a provided prompt. Once generated, it updates the post in the database and notifies the user via email.
+*   **Error Handling:** It includes custom exception handling for API errors when communicating with the Mailgun or DeepAI services.
+
 
 ### File Upload (`routers/upload.py`)
 
@@ -197,7 +201,7 @@ Here is a summary of the available endpoints. Endpoints marked with `(auth)` req
 | `POST` | `/register`                | Creates a new user.                        |
 | `POST` | `/token`                   | Authenticates a user and returns a token.  |
 | `GET`  | `/confirm/{token}`         | Confirms a user's email address.           |
-| `POST` | `/post` (auth)             | Creates a new post.                        |
+| `POST` | `/post` (auth)             | Creates a new post. Supports optional `prompt` query parameter for AI image generation. |
 | `GET`  | `/post`                    | Retrieves all posts.                       |
 | `GET`  | `/post/{post_id}`          | Retrieves a post and all its comments.     |
 | `POST` | `/comment` (auth)          | Creates a new comment on a post.           |

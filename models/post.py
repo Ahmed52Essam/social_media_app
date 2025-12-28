@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
@@ -11,6 +12,7 @@ class UserPost(UserPostIn):
     )  # ORM mode "pydantic to be able to handle sql objects"
     id: int
     user_id: int
+    image_url: Optional[str] = None
 
 
 {"id": 0, "body": "This is my post"}

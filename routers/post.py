@@ -3,9 +3,10 @@ from enum import Enum
 from typing import Annotated
 
 import sqlalchemy
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException ,BackgroundTasks , Request
 
 from social_media_app.database import comment_table, database, like_table, post_table
+from social_media_app.tasks import generate_and_add_to_post
 from social_media_app.models.post import (
     Comment,
     CommentIn,
@@ -37,7 +38,7 @@ async def find_post(post_id: int):
 
 @router.post("/post", response_model=UserPost, status_code=201)
 async def create_post(
-    post: UserPostIn, current_user: Annotated[str, Depends(get_current_user)]
+    post: UserPostIn, current_user: Annotated[str, Depends(get_current_user)] , background_tasks: BackgroundTasks , request: Request , prompt: str = None
 ):
     logger.info(f"Creating post: {post}")
 
@@ -45,6 +46,16 @@ async def create_post(
     query = post_table.insert().values(data)
     logger.debug(query)
     last_record_id = await database.execute(query)
+    if prompt:
+        background_tasks.add_task(
+            generate_and_add_to_post,
+            current_user.email,
+            last_record_id,
+            request.url_for("get_post_with_comments", post_id=last_record_id),
+            database,
+            prompt
+            )
+            
     return {**data, "id": last_record_id}
 
 
