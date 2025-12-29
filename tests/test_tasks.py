@@ -1,9 +1,14 @@
-from databases import Database
-from social_media_app.database import database, post_table
 import httpx
 import pytest
+from databases import Database
 
-from social_media_app.tasks import APIResponseError, send_simple_email , _generate_cute_creature_image_api , generate_and_add_to_post
+from social_media_app.database import post_table
+from social_media_app.tasks import (
+    APIResponseError,
+    _generate_cute_creature_image_api,
+    generate_and_add_to_post,
+    send_simple_email,
+)
 
 
 @pytest.mark.anyio
@@ -49,18 +54,20 @@ async def test_generate_cute_creature_image_api_json_error(mock_httpx_client):
     with pytest.raises(APIResponseError):
         await _generate_cute_creature_image_api("A blue cat")
 
+
 @pytest.mark.anyio
 async def test_generate_and_add_to_post_success(
-    mock_httpx_client, created_post: dict, confirmed_user: dict ,db : Database
+    mock_httpx_client, created_post: dict, confirmed_user: dict, db: Database
 ):
-
-    json_data={"output_url": "https://example.com/image.jpg"}
-    mock_httpx_client.post.return_value=httpx.Response(
+    json_data = {"output_url": "https://example.com/image.jpg"}
+    mock_httpx_client.post.return_value = httpx.Response(
         status_code=200,
         json=json_data,
         request=httpx.Request("POST", "//"),
     )
-    await generate_and_add_to_post(confirmed_user["email"],created_post["id"],"/post/1/",db,"A cat")
+    await generate_and_add_to_post(
+        confirmed_user["email"], created_post["id"], "/post/1/", db, "A cat"
+    )
     query = post_table.select().where(post_table.c.id == created_post["id"])
 
     updated_post = await db.fetch_one(query)
