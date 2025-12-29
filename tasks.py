@@ -1,10 +1,11 @@
 import logging
 from json import JSONDecodeError
-from databases import Database
-from social_media_app.database import  post_table
+
 import httpx
+from databases import Database
 
 from social_media_app.config import config
+from social_media_app.database import post_table
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,8 @@ async def send_user_registeration_email(email: str, confirmation_url: str):
         ),
     )
 
-async def _generate_cute_creature_image_api(prompt:str):
+
+async def _generate_cute_creature_image_api(prompt: str):
     logger.debug(f"Generating image for prompt '{prompt[:20]}'")
     async with httpx.AsyncClient() as client:
         try:
@@ -59,7 +61,7 @@ async def _generate_cute_creature_image_api(prompt:str):
                 data={
                     "text": f"{prompt}",
                 },
-                headers={'api-key': config.DEEPAI_API_KEY}
+                headers={"api-key": config.DEEPAI_API_KEY},
             )
             logger.debug(response)
             response.raise_for_status()
@@ -74,6 +76,7 @@ async def _generate_cute_creature_image_api(prompt:str):
                 f"API response parsing failed with error {err}"
             ) from err
 
+
 async def generate_and_add_to_post(
     email: str,
     post_id: int,
@@ -83,7 +86,7 @@ async def generate_and_add_to_post(
 ):
     try:
         response = await _generate_cute_creature_image_api(prompt)
-    except APIResponseError as err:
+    except APIResponseError:
         return await send_simple_email(
             email,
             "Failed to generate image",
