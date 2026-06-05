@@ -33,4 +33,7 @@ jobs:
         ruff check . --output-format=github 
     - name: Test with pytest
       run: |
-        pytest
+        pytest -n auto
+      env:
+        TEST_SECRET_KEY: "dummy_secret_for_ci_tests_only"
+        TEST_ALGORITHM: "HS256"
