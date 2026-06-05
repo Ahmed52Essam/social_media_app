@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 from typing import Optional
 
@@ -21,6 +22,8 @@ class GlobalConfig(BaseConfig):
     B2_APPLICATION_KEY: Optional[str] = None
     B2_BUCKET_NAME: Optional[str] = None
     DEEPAI_API_KEY: Optional[str] = None
+    SECRET_KEY: Optional[str] = None
+    ALGORITHM: Optional[str] = "HS256"
 
 
 class DevConfig(GlobalConfig):
@@ -40,7 +43,12 @@ class TestConfig(GlobalConfig):
 @lru_cache
 def get_config(env_state: str):
     configs = {"dev": DevConfig, "prod": ProdConfig, "test": TestConfig}
-    return configs[env_state]()
+    config_obj = configs[env_state]()
+    if env_state == "test":
+        worker_id = os.environ.get("PYTEST_XDIST_WORKER")
+        if worker_id:
+            config_obj.DATABASE_URL = f"sqlite:///test_{worker_id}.db"
+    return config_obj
 
 
 config = get_config(BaseConfig().ENV_STATE)

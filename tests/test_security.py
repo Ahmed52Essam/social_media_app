@@ -2,6 +2,7 @@ import pytest
 from jose import jwt
 
 from social_media_app import security
+from social_media_app.config import config
 
 
 @pytest.mark.anyio
@@ -19,7 +20,7 @@ async def test_create_access_token():
     token = "email@test.net"
     token = security.create_access_token(token)
     assert {"sub": "email@test.net", "type": "access"}.items() <= jwt.decode(
-        token, key=security.SECRET_KEY, algorithms=[security.ALGORITHM]
+        token, key=config.SECRET_KEY, algorithms=[config.ALGORITHM]
     ).items()
 
 
@@ -28,7 +29,7 @@ async def test_create_confirmation_token():
     email = "email@test.net"
     token = security.create_confirmation_token(email)
     assert {"sub": "email@test.net", "type": "confirmation"}.items() <= jwt.decode(
-        token, key=security.SECRET_KEY, algorithms=[security.ALGORITHM]
+        token, key=config.SECRET_KEY, algorithms=[config.ALGORITHM]
     ).items()
 
 
@@ -73,10 +74,10 @@ async def test_get_subject_for_token_type_sub_field_missing():
     email = "test@example.com"
     token = security.create_access_token(email)
     payload = jwt.decode(
-        token, key=security.SECRET_KEY, algorithms=[security.ALGORITHM]
+        token, key=config.SECRET_KEY, algorithms=[config.ALGORITHM]
     )
     del payload["sub"]
-    token = jwt.encode(payload, key=security.SECRET_KEY, algorithm=security.ALGORITHM)
+    token = jwt.encode(payload, key=config.SECRET_KEY, algorithm=config.ALGORITHM)
     with pytest.raises(security.HTTPException) as exc_info:
         security.get_subject_for_token_type(token, "access")
         assert "Token is missing 'sub' field" == exc_info.value.detail
@@ -89,7 +90,7 @@ async def test_get_subject_for_token_type_sub_wrong_type():
     with pytest.raises(security.HTTPException) as exc_info:
         security.get_subject_for_token_type(token, "access")
         assert (
-            "Token has incorrect type , expected 'confirmation'"
+            "Token has incorrect type , expected 'access'"
             == exc_info.value.detail
         )
 

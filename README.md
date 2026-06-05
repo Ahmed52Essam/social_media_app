@@ -191,6 +191,10 @@ To run the automated tests for this project, you'll first need to install the de
     ```bash
     pytest
     ```
+    For faster execution, you can run tests in parallel using `pytest-xdist`:
+    ```bash
+    pytest -n auto
+    ```
 
 ## API Endpoints
 

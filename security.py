@@ -7,12 +7,11 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
+from social_media_app.config import config
 from social_media_app.database import database, user_table
 
 logger = logging.getLogger(__name__)
 
-SECRET_KEY = "sdfkkajfklj8983huih2389fh2ih89f2389hf392h89fh23348h78f3"
-ALGORITHM = "HS256"
 oauth2scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
@@ -41,7 +40,7 @@ def create_access_token(email: str):
         minutes=access_token_expire_minutes()
     )
     jwt_data = {"sub": email, "exp": expire, "type": "access"}
-    encoded_jwt = jwt.encode(jwt_data, key=SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(jwt_data, key=config.SECRET_KEY, algorithm=config.ALGORITHM)
     return encoded_jwt
 
 
@@ -51,7 +50,7 @@ def create_confirmation_token(email: str):
         minutes=confirmation_token_expire_minutes()
     )
     jwt_data = {"sub": email, "exp": expire, "type": "confirmation"}
-    encoded_jwt = jwt.encode(jwt_data, key=SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(jwt_data, key=config.SECRET_KEY, algorithm=config.ALGORITHM)
     return encoded_jwt
 
 
@@ -59,7 +58,7 @@ def get_subject_for_token_type(
     token: str, type: Literal["access", "confirmation"]
 ) -> str:
     try:
-        payload = jwt.decode(token, key=SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, key=config.SECRET_KEY, algorithms=[config.ALGORITHM])
     except ExpiredSignatureError as e:
         raise credintials_exception("Token has expired!") from e
     except JWTError as e:
